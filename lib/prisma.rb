@@ -47,7 +47,7 @@ module Prisma
 
   # Configures a group. The instance of the current {http://api.rubyonrails.org/classes/ActionController/Base.html ActionController} is being passed as an argument into the block.
   # As an example, tracking daily active users could be as simple as:
-  #     Prisma.setup |config|
+  #     Prisma.setup do |config|
   #       config.group :logged_in { |controller| controller.current_user.id }
   #     end
   #
