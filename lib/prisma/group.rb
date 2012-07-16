@@ -16,9 +16,9 @@ module Prisma
     attr_accessor :block
 
     # Initialize +Group+ from a hash
-    def initialize(options={})
+    def initialize(options = {})
       options.reverse_merge!(type: :counter)
-      raise ArgumentError.new("Type #{options[:type].inspect} not allowed") unless [:counter, :bitmap].include? options[:type]
+      raise ArgumentError.new("Type #{options[:type].inspect} not allowed") unless [:counter, :bitmap].include?(options[:type])
 
       self.name = options[:name]
       self.type = options[:type]
@@ -32,19 +32,21 @@ module Prisma
     # @param [Range] range of days
     # @return [Hash]
     def range(range)
-      range = range..range if range.is_a? Date
-      data = {}
-      range.each do |date|
+      range = (range..range) if range.is_a?(Date)
+      data = range.map do |date|
         case type
         when :counter
-          data[date] = Prisma.redis.get(Prisma.redis_key(name, date)).to_i
+          value = Prisma.redis.get(Prisma.redis_key(name, date)).to_i
         when :bitmap
           bitstring = Prisma.redis.get(Prisma.redis_key(name, date)) || ''
           string = bitstring.unpack('b*').first
-          data[date] = string.count('1')
+          value = string.count('1')
         end
+
+        [date, value]
       end
-      data
+
+      Hash[data]
     end
     alias_method :daily, :range
 
@@ -54,8 +56,8 @@ module Prisma
     # @return [Hash]
     def weekly(range)
       data = range(range)
-
       data = data.group_by { |date, value| date.beginning_of_week }
+
       sum_up_grouped_data(data)
     end
 
@@ -65,17 +67,21 @@ module Prisma
     # @return [Hash]
     def monthly(range)
       data = range(range)
-
       data = data.group_by { |date, value| date.beginning_of_month }
+
       sum_up_grouped_data(data)
     end
 
     private
 
     def sum_up_grouped_data(data)
-      data.each do |date, values|
-        data[date] = values.map { |value| value.second }.inject{ |sum, count| sum + count }
+      data = data.map do |date, values|
+        value = values.inject(0) { |sum, value| sum + value.second }
+
+        [date, value]
       end
+
+      Hash[data]
     end
   end
 end
