@@ -32,19 +32,21 @@ module Prisma
     # @param [Range] range of days
     # @return [Hash]
     def range(range)
-      range = range..range if range.is_a? Date
-      data = {}
-      range.each do |date|
+      range = (range..range) if range.is_a?(Date)
+      data = range.map do |date|
         case type
         when :counter
-          data[date] = Prisma.redis.get(Prisma.redis_key(name, date)).to_i
+          value = Prisma.redis.get(Prisma.redis_key(name, date)).to_i
         when :bitmap
           bitstring = Prisma.redis.get(Prisma.redis_key(name, date)) || ''
           string = bitstring.unpack('b*').first
-          data[date] = string.count('1')
+          value = string.count('1')
         end
+
+        [date, value]
       end
-      data
+
+      Hash[data]
     end
     alias_method :daily, :range
 
