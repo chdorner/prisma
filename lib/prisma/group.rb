@@ -75,9 +75,13 @@ module Prisma
     private
 
     def sum_up_grouped_data(data)
-      data.each do |date, values|
-        data[date] = values.inject(0) { |sum, value| sum + value.second }
+      data = data.map do |date, values|
+        value = values.inject(0) { |sum, value| sum + value.second }
+
+        [date, value]
       end
+
+      Hash[data]
     end
   end
 end
