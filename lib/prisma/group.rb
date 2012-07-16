@@ -16,7 +16,7 @@ module Prisma
     attr_accessor :block
 
     # Initialize +Group+ from a hash
-    def initialize(options={})
+    def initialize(options = {})
       options.reverse_merge!(type: :counter)
       raise ArgumentError.new("Type #{options[:type].inspect} not allowed") unless [:counter, :bitmap].include? options[:type]
 
@@ -54,8 +54,8 @@ module Prisma
     # @return [Hash]
     def weekly(range)
       data = range(range)
-
       data = data.group_by { |date, value| date.beginning_of_week }
+
       sum_up_grouped_data(data)
     end
 
@@ -65,8 +65,8 @@ module Prisma
     # @return [Hash]
     def monthly(range)
       data = range(range)
-
       data = data.group_by { |date, value| date.beginning_of_month }
+
       sum_up_grouped_data(data)
     end
 
