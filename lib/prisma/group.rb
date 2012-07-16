@@ -18,7 +18,7 @@ module Prisma
     # Initialize +Group+ from a hash
     def initialize(options = {})
       options.reverse_merge!(type: :counter)
-      raise ArgumentError.new("Type #{options[:type].inspect} not allowed") unless [:counter, :bitmap].include? options[:type]
+      raise ArgumentError.new("Type #{options[:type].inspect} not allowed") unless [:counter, :bitmap].include?(options[:type])
 
       self.name = options[:name]
       self.type = options[:type]
